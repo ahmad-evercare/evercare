@@ -1,0 +1,134 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>تقييم خدمة العملاء - Evercare</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f6f9fc;
+      text-align: center;
+      padding: 20px;
+    }
+    img {
+      max-width: 200px;
+      margin-bottom: 20px;
+    }
+    form {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      max-width: 400px;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    .faces {
+      display: flex;
+      justify-content: space-between;
+      gap: 5px;
+      margin: 15px 0;
+    }
+    .faces button {
+      font-size: 30px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      flex: 1;
+    }
+    .faces button.selected {
+      transform: scale(1.3);
+    }
+    #thankYou {
+      display: none;
+      font-size: 20px;
+      color: #198754;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <img src="logo.png" alt="Evercare Logo">
+  <h2>تقييم خدمة العملاء</h2>
+  <form id="feedbackForm">
+    <input type="text" id="customerName" placeholder="اسم العميل" required style="text-align:right;">
+    <input type="tel" id="phoneNumber" placeholder="رقم الجوال" required style="text-align:right; direction:rtl;">
+
+    <div class="faces">
+      <button type="button" data-rating="1" data-text="سيء جداً">😞</button>
+      <button type="button" data-rating="2" data-text="سيء">🙁</button>
+      <button type="button" data-rating="3" data-text="متوسط">😐</button>
+      <button type="button" data-rating="4" data-text="جيد">😊</button>
+      <button type="button" data-rating="5" data-text="ممتاز جداً">😍</button>
+    </div>
+
+    <input type="hidden" id="rating">
+    <input type="hidden" id="ratingText">
+    <textarea id="comments" placeholder="ملاحظات أو اقتراحات (اختياري)" style="text-align:right; height:80px;"></textarea>
+
+    <button type="submit">إرسال التقييم</button>
+  </form>
+
+  <p id="thankYou">شكرًا لتقييمك 💙 – نسعد بخدمتك دائمًا في Evercare!</p>
+
+  <script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbwoqT-2nl5vVsgbL7UzjzBCCAisLDEW-opNBhP0wG2riceX4LPgBQJE1ZdQeED5bX8p/exec";
+
+    const form = document.getElementById('feedbackForm');
+    const ratingInput = document.getElementById('rating');
+    const ratingTextInput = document.getElementById('ratingText');
+    const buttons = document.querySelectorAll('.faces button');
+    const thankYou = document.getElementById('thankYou');
+
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        buttons.forEach(btn => btn.classList.remove('selected'));
+        button.classList.add('selected');
+        ratingInput.value = button.getAttribute('data-rating');
+        ratingTextInput.value = button.getAttribute('data-text');
+      });
+    });
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      if (!ratingInput.value) {
+        alert('يرجى اختيار تقييم قبل الإرسال.');
+        return;
+      }
+
+      const data = {
+        customerName: document.getElementById('customerName').value,
+        phoneNumber: document.getElementById('phoneNumber').value,
+        rating: ratingInput.value,
+        ratingText: ratingTextInput.value,
+        comments: document.getElementById('comments').value,
+        timestamp: new Date().toISOString()
+      };
+
+      fetch(scriptURL, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        form.reset();
+        buttons.forEach(btn => btn.classList.remove('selected'));
+        thankYou.style.display = 'block';
+      })
+      .catch(error => {
+        alert('حدث خطأ أثناء إرسال التقييم. حاول مرة أخرى.');
+        console.error('Error!', error.message);
+      });
+    });
+  </script>
+</body>
+</html>
